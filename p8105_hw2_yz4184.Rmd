@@ -81,11 +81,13 @@ snp_df = read_csv("data/snp.csv")%>%
   pivot_longer(
     jan:dec,
     names_to = "month", 
-    values_to = "unemployment")
+    values_to = "unemployment")%>%
+  mutate(year = as.character(year))
 ```
 
 ```{r}
-
+df = left_join(pols_df, snp_df)
+df_2 =left_join(df,unemployment_df)
 ```
 
 
