@@ -90,6 +90,7 @@ df = left_join(pols_df, snp_df)
 df_2 =left_join(df,unemployment_df)
 ```
 
+there are 11 total columns and 822 rows in the final dataframe. 
 
 ## Problem 3
 
