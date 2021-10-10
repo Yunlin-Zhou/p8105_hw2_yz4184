@@ -1,0 +1,114 @@
+---
+title: "p8105_hw2_yz4184"
+author: "Yunlin Zhou"
+date: "10/9/2021"
+output: github_document
+---
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+# Problem 1
+
+```{r}
+TW_df = read_excel(
+  path = "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+  sheet = "Mr. Trash Wheel",
+  range = "A2:N535") %>% 
+	janitor::clean_names() %>% 
+  drop_na(dumpster) %>% 
+  mutate(
+		sports_balls = round(sports_balls),
+		sports_balls = as.integer(sports_balls)
+	)
+   
+```
+
+
+```{r}
+df_2019 = read_excel(path = "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",sheet = "2019 Precipitation",
+  skip = 1)%>% 
+	janitor::clean_names() %>% 
+  mutate(year = "2019")
+
+df_2018 = read_excel(path = "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx",
+  sheet = "2018 Precipitation",
+  skip = 1)%>% 
+	janitor::clean_names() %>% 
+  mutate(year = "2018")
+```
+
+```{r}
+month_df = tibble(month= 1:12, 
+            month_name = month.name)
+df_18_19 = 
+  full_join(df_2019, df_2018, by = "month")
+
+df_1819_mon = full_join(df_18_19, month_df, by = "month" )
+
+```
+
+The total precipitation in 2019 is smaller than 2018.
+
+the total precipitation in 2018 was `r df_1819_mon %>% select(total.y) %>% sum()`
+
+the median number of sports balls in a dumpster in 2019 was `r TW_df %>% filter(year == 2017) %>% pull(sports_balls) %>% median()`
+
+## Problem 2
+
+```{r}
+pols_df = read_csv("data/pols_month.csv")%>%
+  separate(mon, into = c("year","month","day"), sep="-")%>%
+  mutate(month = as.numeric(month),
+         month=month.name[month],
+         president = recode(prez_gop, `0`="dem", `1`="gop", `2`="gop"))%>%
+  select(-prez_dem, -prez_gop, -day )
+```
+
+```{r}
+snp_df = read_csv("data/snp.csv")%>%
+  separate(date, into = c("month","day","year"), sep="/")%>%
+  mutate(month = as.numeric(month),
+         month=month.name[month])%>%
+  select( -day )%>%
+  relocate(year)
+```
+
+
+
+## Problem 3
+
+```{r}
+baby = read_csv(
+  "./data/Popular_Baby_Names.csv")%>%
+  janitor::clean_names()
+
+
+
+baby = mutate(baby,
+       childs_first_name =tolower(childs_first_name),
+       ethnicity = recode(ethnicity, `ASIAN AND PACIFIC ISLANDER` = "ASIAN AND PACI", `BLACK NON HISPANIC` = "BLACK NON HISP", `WHITE NON HISPANIC` = "WHITE NON HISP"))
+
+table(pull(baby, "ethnicity"))
+
+baby = distinct(baby)
+
+  
+```
+
+```{r}
+olivia = filter(baby, childs_first_name == "olivia")%>%
+  select(-gender, -count)%>%
+  pivot_wider(names_from = "year_of_birth",
+              values_from = "rank")%>%
+  relocate(childs_first_name)
+
+```
+
+```{r}
+male = filter(baby, gender == "MALE", ethnicity == "WHITE NON HISP", year_of_birth == "2016")
+
+ggplot(male, aes(x = rank, y = count))+geom_point()
+```
+
